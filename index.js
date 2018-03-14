@@ -29,7 +29,7 @@ const Boom = require('boom');
 const server = new Hapi.Server();
 
 // Configure the port on which the server will listen
-server.connection({ port: 3000});
+server.connection({ port: 3000 });
 
 // Define routes
 server.route([
@@ -40,6 +40,8 @@ server.route([
             reply('server is running');
         }
     },
+
+    /** Othello **/
     {
         method: 'GET',
         path: '/othello',
@@ -91,6 +93,118 @@ server.route([
         path: '/othello',
         handler: function(request, reply) {
             deleteFile("othello.txt");
+            reply("Game deleted");
+        }
+    },
+
+    /** Tic Tac Toe **/
+    {
+        method: 'GET',
+        path: '/ttc',
+        handler: function(request, reply) {
+            const fileOutput = readFile("ttc.txt");
+            if (!fileOutput) {
+                reply(Boom.notFound('There is not currently a game in progress'));
+            } else {
+                reply(fileOutput);
+            }
+        }
+    },
+    {
+        method: 'POST',
+        path: '/ttc',
+        handler: function(request, reply) {
+            const startingBoard = "000\n000\n000";
+            writeFile("ttc.txt", startingBoard);
+            reply("New game created");
+        }
+    },
+    {
+        method: 'PUT',
+        path: '/ttc',
+        config: {
+            validate: {
+                payload: {
+                    player: Joi.number().integer().min(1).max(2).required(),
+                    row: Joi.number().integer().min(0).max(2).required(),
+                    col: Joi.number().integer().min(0).max(2).required()
+                }
+            }
+        },
+        handler: function(request, reply) {
+            const fileName = "ttc.txt";
+            var fileOutput = readFile(fileName);
+            if (!fileOutput) {
+                reply(Boom.notFound("There is not currently a game in progress"));
+                return;
+            }
+            const strIndex = request.payload.row * 4 + request.payload.col;
+            fileOutput = fileOutput.substring(0, strIndex) + request.payload.player + fileOutput.substring(strIndex + 1, fileOutput.length);
+            writeFile(fileName, fileOutput);
+            reply(request.payload.player == 1 ? 2 : 1);
+        }
+    },
+    {
+        method: 'DELETE',
+        path: '/ttc',
+        handler: function(request, reply) {
+            deleteFile("ttc.txt");
+            reply("Game deleted");
+        }
+    },
+
+    /** Connect Four **/
+    {
+        method: 'GET',
+        path: '/connect4',
+        handler: function(request, reply) {
+            const fileOutput = readFile("connect4.txt");
+            if (!fileOutput) {
+                reply(Boom.notFound('There is not currently a game in progress'));
+            } else {
+                reply(fileOutput);
+            }
+        }
+    },
+    {
+        method: 'POST',
+        path: '/connect4',
+        handler: function(request, reply) {
+            const startingBoard = "0000000\n0000000\n0000000\n0000000\n0000000\n0000000";
+            writeFile("connect4.txt", startingBoard);
+            reply("New game created");
+        }
+    },
+    {
+        method: 'PUT',
+        path: '/connect4',
+        config: {
+            validate: {
+                payload: {
+                    player: Joi.number().integer().min(1).max(2).required(),
+                    row: Joi.number().integer().min(0).max(5).required(),
+                    col: Joi.number().integer().min(0).max(6).required()
+                }
+            }
+        },
+        handler: function(request, reply) {
+            const fileName = "connect4.txt";
+            var fileOutput = readFile(fileName);
+            if (!fileOutput) {
+                reply(Boom.notFound("There is not currently a game in progress"));
+                return;
+            }
+            const strIndex = request.payload.row * 8 + request.payload.col;
+            fileOutput = fileOutput.substring(0, strIndex) + request.payload.player + fileOutput.substring(strIndex + 1, fileOutput.length);
+            writeFile(fileName, fileOutput);
+            reply(request.payload.player == 1 ? 2 : 1);
+        }
+    },
+    {
+        method: 'DELETE',
+        path: '/connect4',
+        handler: function(request, reply) {
+            deleteFile("connect4.txt");
             reply("Game deleted");
         }
     },
